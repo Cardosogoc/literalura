@@ -12,10 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.boot.CommandLineRunner;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 @Component
 public class Principal implements CommandLineRunner {
@@ -33,6 +30,7 @@ public class Principal implements CommandLineRunner {
     private List<Livro> livros = new ArrayList<>();
     private List<Autor> autores = new ArrayList<>();
 
+
     @Override
     public void run(String... args) throws Exception {
         exibeMenu();
@@ -47,7 +45,7 @@ public class Principal implements CommandLineRunner {
                     1 - buscar livro pelo título
                     2 - listar livros registrados
                     3 - listar autores registrados
-                    4 - listar autores vivos em um determinado ano
+                    4 - listar autores estivaram/estão vivos em um determinado periodo
                     5 - listar livros em um determinado idioma
                     0 - Sair
                     """;
@@ -64,6 +62,12 @@ public class Principal implements CommandLineRunner {
                     break;
                 case 3:
                     listarAutoresCadastrados();
+                    break;
+                case 4:
+                    buscaAutoresFiltro();
+                    break;
+                case 5:
+                    buscarLivroPorIdioma();
                     break;
                 case 0:
                     System.out.println("Saindo...");
@@ -120,5 +124,36 @@ public class Principal implements CommandLineRunner {
         autores.stream()
                 .sorted(Comparator.comparing(Autor::getNome))
                 .forEach(System.out::println);
+    }
+
+    private void buscaAutoresFiltro(){
+
+            System.out.println("Inicio do Periodo (ano)? ");
+            var anoInicio = leitura.nextInt();
+            leitura.nextLine();
+            System.out.println("Fim do Periodo (ano)? ");
+            var anoFim = leitura.nextInt();
+            leitura.nextLine();
+            List<Autor> autoresEncontrados = autorRepository.autoresVivosEntre(anoInicio, anoFim);
+            System.out.println("Autores vivos entre " + anoInicio + " e " + anoFim);
+            autoresEncontrados.forEach(a ->
+                    System.out.println("Autor(a): " + a.getNome() +
+                            " | Nascimento Autor(a): " + a.getBirthYear() +
+                            " | Falecimento Autor(a): " + a.getDeathYear()));
+
+    }
+
+    private void buscarLivroPorIdioma() {
+        System.out.println("Informe o idioma que deseja buscar pela sigla: ");
+        var idioma = leitura.nextLine();
+
+        List<Livro> livros = livroRepository.findByIdiomaContaining(idioma);
+
+        if (livros.isEmpty()) {
+            System.out.println("Livros nesse idioma não encontrados :/");
+        } else {
+            System.out.println("Livros encontrados:");
+            livros.forEach(System.out::println);
+        }
     }
 }
